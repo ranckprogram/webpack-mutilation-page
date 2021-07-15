@@ -1,1 +1,2 @@
-console.log(11)
+import "./index.styl"
+console.log("112226233")

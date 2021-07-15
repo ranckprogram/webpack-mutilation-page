@@ -1,4 +1,5 @@
 const path = require("path");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 const pages = [
@@ -21,6 +22,7 @@ const pages = [
 ];
 
 module.exports = {
+  mode: "development",
   entry: pages.reduce(
     (result, current) => ({
       ...result,
@@ -31,6 +33,7 @@ module.exports = {
   output: {
     path: path.join(__dirname, "dist"),
     filename: "[name]-[contenthash:5].js",
+    clean: true,
   },
   module: {
     rules: [
@@ -38,20 +41,32 @@ module.exports = {
         test: /.pug$/,
         use: ["pug-loader"],
       },
-      // {
-      //   test: /.pug$/,
-      //   use: ["pug-loader"],
-      // },
+      {
+        test: /.styl$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          "css-loader",
+          "postcss-loader",
+          "stylus-loader",
+        ],
+      },
     ],
   },
   plugins: [
-    ...pages.map(item => new HtmlWebpackPlugin({
-      template: `./src/pages/${item.page}/index.pug`,
-      filename: `${item.page}.html`,
-      templateParameters: {
-        title: item.title,
-        item
-      },
-    }))
-  ]
+    new MiniCssExtractPlugin(),
+    ...pages.map(
+      (item) =>
+        new HtmlWebpackPlugin({
+          template: `./src/pages/${item.page}/index.pug`,
+          filename: `${item.page}.html`,
+          templateParameters: {
+            ...item,
+          },
+        })
+    ),
+  ],
+  devServer: {
+    contentBase: "./dist",
+    hot: true,
+  },
 };
